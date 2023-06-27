@@ -1,0 +1,74 @@
+@Override
+        protected ArrayList<String[]> doInBackground(String... params) {
+            ArrayList<String[]> res=new ArrayList <>();
+            HttpURLConnection myConnection = null;
+            try {
+                URL mySite = new URL("http://10.0.2.2:8080/kino/films?name="+params[0]);
+                myConnection =
+                        (HttpURLConnection) mySite.openConnection();
+            } catch (MalformedURLException e) {
+                //e.printStackTrace();
+            } catch (IOException e) {
+                //e.printStackTrace();
+            }
+
+            int i=0;
+            try {
+                i = myConnection.getResponseCode();
+            } catch (IOException e) {
+                //e.printStackTrace();
+            }
+            if (i==200) {
+                InputStream responseBody=null;
+                try {
+                    responseBody = myConnection.getInputStream();
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                }
+                InputStreamReader responseBodyReader =null;
+                try {
+                    responseBodyReader =
+                            new InputStreamReader(responseBody, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    //e.printStackTrace();
+                }
+                BufferedReader r = new BufferedReader(new InputStreamReader(responseBody));
+                String total="";
+                String line="";
+                while (true) {
+
+                    try {
+                        if (!((line = r.readLine()) != null)) break;
+                    } catch (IOException e) {
+                        //e.printStackTrace();
+                    }
+                    total=total+line;
+                }
+                JSONArray JA=new JSONArray();
+                try {
+                    JA=new JSONArray(total);
+                } catch (JSONException e) {
+                    //e.printStackTrace();
+                }
+                for (int j=0;j<JA.length();j++) {
+                    JSONObject JO=null;
+                    try {
+                        JO=JA.getJSONObject(j);
+                    } catch (JSONException e) {
+                        //e.printStackTrace();
+                    }
+                    String[] st= new String[3];
+                    try {
+                        st[0] = JO.getString("fname").toString() + "  ";
+                        st[1] = JO.getString("tname").toString() + "  ";
+                        st[2] = JO.getString("taddress").toString();
+                    } catch (JSONException e) {
+                        //e.printStackTrace();
+                    }
+                    res.add(st);
+                }
+            }
+            myConnection.disconnect();
+            return res;
+
+        }
